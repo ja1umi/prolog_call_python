@@ -1,13 +1,23 @@
-:- module(python_lib, [python_call/4, python_call/3]).
+:- module(python_lib, [python_call/4, python_call/3, python_call_with_numeric_args/4]).
+
+python_call_with_numeric_args(File, Function, NumArgs, Result) :-
+    term_string(NumArgs, SArgs),
+%	write(SArgs),nl,
+    atomic_list_concat(['from ', File, ' import *;print(', Function, '(', SArgs, '))'], Command),
+%	write(Command),nl,
+    process_create(path('python'), ['-c', Command], [stdout(pipe(Out))]),
+    read_lines(Out, Lines), last(Lines, Result).
 
 python_call(File, Function, Args, Result) :-
-    term_string(Args, SArgs),
+    term_string(Args, SArgs),write(SArgs),nl,
     atomic_list_concat(['from ', File, ' import *;print(', Function, '(''', SArgs, '''))'], Command),
+%	write(Command),nl,
     process_create(path('python'), ['-c', Command], [stdout(pipe(Out))]),
     read_lines(Out, Lines), last(Lines, Result).
 
 python_call(File, Function, Result) :-
     atomic_list_concat(['from ', File, ' import *;print(', Function, '())'], Command),
+%	write(Command),nl,
     process_create(path('python'), ['-c', Command], [stdout(pipe(Out))]),
     read_lines(Out, Lines), last(Lines, Result).
 
